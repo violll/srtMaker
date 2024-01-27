@@ -1,0 +1,95 @@
+#:import Factory kivy.factory.Factory
+
+<SrtMakerEntryScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 10
+        Button:
+            text: app.video
+            on_press:
+                root.buttonPressed = 'video'
+                root.manager.current = 'file directory'
+        Button:
+            text: app.script
+            on_press:
+                root.buttonPressed = 'script'
+                root.manager.current = 'file directory'
+        Button:
+            text: app.srt
+            on_press:
+                root.buttonPressed = 'srt'
+                root.manager.current = 'file directory'
+
+        Button:
+            text: 'Submit!'
+            on_press:
+                root.manager.current = 'video'
+
+<FileChooser>:
+    id: fileChooser
+    FileChooserListView:
+        id: fileViewer
+        rootpath: 'C:\\Users\\Gil\\OneDrive\\Documents\\Programming\\srtMaker'
+    
+        on_selection: root.select(*args)
+        on_submit: 
+            fileChooser.savePath(fileViewer.selection[0])
+            root.manager.get_screen('menu').buttonPressed = ''
+            root.manager.current = 'menu'
+
+<SrtMaker>:
+    id: srtMaker
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 10
+        VideoPlayer:
+            id: vPlayer
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: 0.25
+            BackgroundLabel:
+                id: name
+                background_color: 36/255, 179/255, 36/255, 0.8
+                size_hint_x: 0.1         
+            BackgroundLabel:
+                id: dialogue
+                background_color: 36/255, 179/255, 36/255, 0.8
+                size_hint_x: 0.3
+                halign: 'center'
+            GridLayout:
+                cols: 5
+                rows: 3
+                size_hint_x: 0.6
+
+                Button:
+                    text: 'Save'
+                    on_press: srtMaker.saveSRT()
+
+# Define your background color Template
+<BackgroundColor@Widget>
+    background_color: 1, 1, 1, 1
+    canvas.before:
+        Color:
+            rgba: root.background_color
+        Rectangle:
+            size: self.size
+            pos: self.pos
+        Color:
+            rgba: 0, 0, 0, 1
+        Rectangle:
+            size: self.size[0]*9/10, self.size[1]/2
+            pos: self.pos[0] + self.size[0]*1/20, self.pos[1] + self.size[1]/4
+# Now you can simply Mix the `BackgroundColor` class with almost
+# any other widget... to give it a background.
+<BackgroundLabel@Label+BackgroundColor>
+    background_color: 0, 0, 0, 0
+
+
+
+#not currently in use
+<FilePopup@Popup>:
+    id: filePopup
+    title: "File Error"
+    Button:
+        text: "Okay"
+        on_release: root.dismiss()
