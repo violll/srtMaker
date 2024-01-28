@@ -16,7 +16,6 @@ from bs4 import BeautifulSoup
 # TODO use popup
     # check a video is selected and a text file is selected
     # check the file types are correct
-# TODO gstreamer error messages ????
 # TODO add keybind option to add the name to the caption?
 # TODO generalize the options by adding a setting button
     # script format
@@ -25,10 +24,6 @@ from bs4 import BeautifulSoup
     # maybe try to automate with whisperX or vosk??????? would need to play around with it a lot
 
 # NEXT UP
-# TODO the actual srt file writing
-    # add offset to the timestamp taking so that human reflex delay is accounted for
-    # save file specifically as srt
-    # get decent naming convention, perhaps based on the video title
 # TODO if srt file is loaded, find the last line and check with the user if that's where they want to start (along with the time stamp)
 # TODO srt file options
     # undo caption write
@@ -127,24 +122,23 @@ class SrtMaker(Screen):
         res = ""
 
         h = int(time // 3600)
-        if h != 0: time %= h
+        if h != 0: time %= h * 3600
 
         res += self.formatTimeDigits(h, 2) + ":"
 
         m = int(time // 60)
-        if m != 0: time %= m
+        if m != 0: time %= m * 60
 
         res += self.formatTimeDigits(m, 2) + ":"
         
         s = int(time)
-        time -= int(time)
+        time -= s
 
         res += self.formatTimeDigits(s, 2) + ","
 
         ms = int(time * 1000)
 
         res += self.formatTimeDigits(ms, 3)
-
         return res
     
     def formatTimeDigits(self, time, nDigits):
