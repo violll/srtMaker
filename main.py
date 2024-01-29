@@ -203,18 +203,12 @@ class SrtMaker(Screen):
         srt = "\n".join(["".join(entry) for entry in self.srtLst])
         print(srt)
 
-        f = open(App.get_running_app().srt, "w")
+        if ".srt" in App.get_running_app().srt:
+            f = open(App.get_running_app().srt, "w")
+        else:
+            f = open(App.get_running_app().video + ".srt", "w")
         f.write(srt)
         f.close
-
-        # if App.get_running_app().srt != 'Select SRT File (optional)':
-        #     f = open(App.get_running_app().srt, "w")
-        #     f.write(srt)
-        #     f.close
-        # else:
-        #     pass
-
-        pass
 
         
 ''' SRT FORMAT
@@ -228,8 +222,6 @@ text2
 ''' SRT Lst FORMAT
 [[index number, hh:mm:ss,msx --> hh:mm:ss,msx, text1, text2],]
 '''
-
-        
 
 class SrtMakerApp(App):
     video = StringProperty('Select Video')
