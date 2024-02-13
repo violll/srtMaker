@@ -6,11 +6,14 @@ from kivy.uix.popup import Popup
 from kivy.properties import StringProperty, ListProperty, NumericProperty, BooleanProperty, DictProperty
 from kivy.config import Config
 from kivy.core.window import Window
+from kivy.clock import Clock
 
 import os
 import re
 
 from bs4 import BeautifulSoup
+
+# from functools import partial
 
 # NICE TO HAVE
 # TODO use popup
@@ -58,6 +61,7 @@ class SrtMaker(Screen):
         self.srtStr = StringProperty()
         self.strLst = ListProperty()
         self.i = NumericProperty()
+        self.tStart = NumericProperty()
         self.recording = BooleanProperty()
         self.dialogueColor = DictProperty()
         self.timeStamp = NumericProperty()
@@ -69,11 +73,10 @@ class SrtMaker(Screen):
         self.timeStamp = -1
 
         self.script = self.reformatScript()
-        self.srtStr, self.srtLst, self.i = self.initSRT()
+        self.srtStr, self.srtLst, self.i, self.tStart = self.initSRT()
+                
         self.ids.name.text = self.script[self.i][0]
         self.ids.dialogue.text = self.script[self.i][1]
-
-        print(self.i)
 
     def _keyboard_closed(self):
         print('My keyboard have been closed!')
@@ -82,7 +85,12 @@ class SrtMaker(Screen):
     
     def _on_keyboard_down(self, keyboard, keycode, text, modifiers):
         print("The key {} has been pressed".format(keycode))
-        if keycode[1] == 'spacebar':
+        
+        if keycode[1] == 'p':
+            self.ids.vPlayer.state = 'play'
+            Clock.schedule_once(self.callbackSetVideoInitSeek, 0.2)
+
+        elif keycode[1] == 'spacebar':
             # change recording status
             self.recording = not self.recording
 
@@ -112,6 +120,10 @@ class SrtMaker(Screen):
             self.ids.dialogue.background_color = self.dialogueColor[self.recording]
         return True
     
+    def callbackSetVideoInitSeek(self, dt):
+        self.ids.vPlayer.state = 'pause'
+        self.ids.vPlayer.seek(self.tStart/self.ids.vPlayer.duration)
+        
     def formatTime(self, time):
         # time is in seconds
         res = ""
@@ -151,13 +163,13 @@ class SrtMaker(Screen):
         # gets each line without silent action in the form [[name, line],]
         text = [[re.match(r'[A-Z\-]+:', br.nextSibling.replace("\n", "")).group(), br.nextSibling.replace("\n", "")[re.match(r'[A-Z\-]+:', br.nextSibling.replace("\n", "")).end():].strip()] for br in soup.findAll("br") if re.match(r'[A-Z\-]+:', br.nextSibling.replace("\n", "")) != None]
 
-        # alternate logic that breaks down the above one-line mess
-        # text = [br.nextSibling.replace("\n", "") for br in soup.findAll("br") if re.match(r'[A-Z\-]+:', br.nextSibling.replace("\n", "")) != None]
-        # for line in text: 
-            # regex = re.match(r'[A-Z\-]+:', line)
-            # name = regex.group()
-            # dialogue = line[regex.end():].strip()
-            # print(name, dialogue, sep="\t")
+        ''' breakdown the above one-line mess for readability
+        text = [br.nextSibling.replace("\n", "") for br in soup.findAll("br") if re.match(r'[A-Z\-]+:', br.nextSibling.replace("\n", "")) != None]
+        for line in text: 
+            regex = re.match(r'[A-Z\-]+:', line)
+            name = regex.group()
+            dialogue = line[regex.end():].strip()
+        '''
         
         # separate each line into two lines of 32char chunks each
         captions = []
@@ -187,12 +199,19 @@ class SrtMaker(Screen):
             # set the script to read the line after the last registered one in the srt file
             srtLst = [[line + "\n" for line in item.split("\n") if line != ''] for item in srtStr.split("\n\n")]
             iStart = int(srtLst[-1][0]) 
+            tStart = self.convertSRTTimeDigits(srtLst[-1][1].strip().split(" --> ")[1])
         else: 
             srtStr = ''
             srtLst = []
             iStart = 0
+            tStart = 0
         
-        return srtStr, srtLst, iStart
+        return srtStr, srtLst, iStart, tStart
+    
+    def convertSRTTimeDigits(self, t):
+        hms, ms = t.split(",")
+        h, m, s = hms.split(":")
+        return int(h) * 60 * 60 + int(m) * 60 + int(s) + int(ms)/1000
 
     def saveSRT(self):
         srt = "\n".join(["".join(entry) for entry in self.srtLst])
