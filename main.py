@@ -24,13 +24,6 @@ from bs4 import BeautifulSoup
     # maybe try to automate with whisperX or vosk??????? would need to play around with it a lot
 
 # NEXT UP
-# TODO if srt file is loaded, find the last line and check with the user if that's where they want to start (along with the time stamp)
-# TODO srt file options
-    # undo caption write
-    # convert to kivy's caption format to be able to review work
-        # hopefully be able to edit caption length in some small increment, like vlc does with offset
-    # use up and down keys to move between script lines
-    # use left and write to seek the video
 # TODO write requirements and README files
 
 Config.set("input", "mouse", "mouse,multitouch_on_demand")
@@ -190,7 +183,7 @@ class SrtMaker(Screen):
         if App.get_running_app().srt != 'Select SRT File (optional)':
             srtStr = open(App.get_running_app().srt).read()
             # set the script to read the line after the last registered one in the srt file
-            srtLst = [item.split("\n") for item in srtStr.split("\n\n")]
+            srtLst = [[line + "\n" for line in item.split("\n") if line != ''] for item in srtStr.split("\n\n")]
             iStart = int(srtLst[-1][0]) + 1
         else: 
             srtStr = ''
