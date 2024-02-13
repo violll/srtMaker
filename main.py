@@ -73,6 +73,8 @@ class SrtMaker(Screen):
         self.ids.name.text = self.script[self.i][0]
         self.ids.dialogue.text = self.script[self.i][1]
 
+        print(self.i)
+
     def _keyboard_closed(self):
         print('My keyboard have been closed!')
         self._keyboard.unbind(on_key_down = self._on_keyboard_down)
@@ -184,7 +186,7 @@ class SrtMaker(Screen):
             srtStr = open(App.get_running_app().srt).read()
             # set the script to read the line after the last registered one in the srt file
             srtLst = [[line + "\n" for line in item.split("\n") if line != ''] for item in srtStr.split("\n\n")]
-            iStart = int(srtLst[-1][0]) + 1
+            iStart = int(srtLst[-1][0]) 
         else: 
             srtStr = ''
             srtLst = []
