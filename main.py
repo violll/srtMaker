@@ -73,7 +73,7 @@ class SrtMaker(Screen):
 
         self.script = self.reformatScript()
         self.srtStr, self.srtLst, self.i, self.tStart = self.initSRT()
-        self.captionKV = self.initCaptionKV()
+        self.captionKV = self.initCaptionKv()
                 
         self.ids.name.text = self.script[self.i][0]
         self.ids.dialogue.text = self.script[self.i][1]
@@ -227,6 +227,25 @@ class SrtMaker(Screen):
             tStart = 0
         
         return srtStr, srtLst, iStart, tStart
+    
+    def initCaptionKv(self):
+        captionKv = []
+        if self.srtLst != []:
+            for line in self.srtLst:
+
+                start, end = line[1].split(" --> ")
+                start = self.convertSRTTimeDigits(start)
+                end = self.convertSRTTimeDigits(end)
+                text = line[2:]
+
+                if type(text) == list:
+                    text = "".join(text)
+                
+                d = {'start': start, 'duration': end - start, 'text': text}
+                
+                captionKv.append(d)
+
+        return captionKv
     
     def convertSRTTimeDigits(self, t):
         hms, ms = t.split(",")
