@@ -58,6 +58,7 @@ class SrtMaker(Screen):
         self.script = StringProperty()
         self.srtStr = StringProperty()
         self.strLst = ListProperty()
+        self.captionKV = ListProperty()
         self.i = NumericProperty()
         self.tStart = NumericProperty()
         self.recording = BooleanProperty()
@@ -72,6 +73,7 @@ class SrtMaker(Screen):
 
         self.script = self.reformatScript()
         self.srtStr, self.srtLst, self.i, self.tStart = self.initSRT()
+        self.captionKV = self.initCaptionKV()
                 
         self.ids.name.text = self.script[self.i][0]
         self.ids.dialogue.text = self.script[self.i][1]
@@ -134,6 +136,7 @@ class SrtMaker(Screen):
         caption['start'] = self.timeStamp
         caption['duration'] = self.ids.vPlayer.position - self.timeStamp
         caption['text'] = self.ids.dialogue.text
+        self.captionKV.append(caption)
 
         return caption
 
