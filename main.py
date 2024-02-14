@@ -104,7 +104,7 @@ class SrtMaker(Screen):
         else:
             caption = self.writeCaptionSRT()
             # print("\n".join(caption))
-            self.srtLst.append(caption)
+            
             self.i += 1
             self.ids.name.text = self.script[self.i][0]
             self.ids.dialogue.text = self.script[self.i][1]
@@ -125,6 +125,7 @@ class SrtMaker(Screen):
         caption.append("{} --> {}\n".format(startTime, stopTime))
         # dialogue
         caption.append(self.ids.dialogue.text + "\n")
+        self.srtLst.append(caption)
 
         return caption
     
