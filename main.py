@@ -13,8 +13,6 @@ import re
 
 from bs4 import BeautifulSoup
 
-# from functools import partial
-
 # NICE TO HAVE
 # TODO use popup
     # check a video is selected and a text file is selected
@@ -91,35 +89,39 @@ class SrtMaker(Screen):
             Clock.schedule_once(self.callbackSetVideoInitSeek, 0.2)
 
         elif keycode[1] == 'spacebar':
-            # change recording status
-            self.recording = not self.recording
-
-            # set initial timestamp
-            if self.recording:
-                self.timeStamp = self.ids.vPlayer.position
-            # write timestamp
-            else:
-                caption = []
-                # index number
-                caption.append(str(self.i + 1) + "\n")
-                # start and end timestamp
-                startTime = self.formatTime(self.timeStamp)
-                stopTime = self.formatTime(self.ids.vPlayer.position)
-                caption.append("{} --> {}\n".format(startTime, stopTime))
-                # dialogue
-                caption.append(self.ids.dialogue.text + "\n")
-
-                print("\n".join(caption))
-                self.srtLst.append(caption)
-                self.i += 1
-                self.ids.name.text = self.script[self.i][0]
-                self.ids.dialogue.text = self.script[self.i][1]
-
-            # change color
-            self.ids.name.background_color = self.dialogueColor[self.recording]
-            self.ids.dialogue.background_color = self.dialogueColor[self.recording]
+            self.recordTimestamps()
+            
         return True
     
+    def recordTimestamps(self):
+        # change recording status
+        self.recording = not self.recording
+
+        # set initial timestamp
+        if self.recording:
+            self.timeStamp = self.ids.vPlayer.position
+        # write timestamp
+        else:
+            caption = []
+            # index number
+            caption.append(str(self.i + 1) + "\n")
+            # start and end timestamp
+            startTime = self.formatTime(self.timeStamp)
+            stopTime = self.formatTime(self.ids.vPlayer.position)
+            caption.append("{} --> {}\n".format(startTime, stopTime))
+            # dialogue
+            caption.append(self.ids.dialogue.text + "\n")
+
+            print("\n".join(caption))
+            self.srtLst.append(caption)
+            self.i += 1
+            self.ids.name.text = self.script[self.i][0]
+            self.ids.dialogue.text = self.script[self.i][1]
+
+        # change color
+        self.ids.name.background_color = self.dialogueColor[self.recording]
+        self.ids.dialogue.background_color = self.dialogueColor[self.recording]
+
     def callbackSetVideoInitSeek(self, dt):
         self.ids.vPlayer.state = 'pause'
         self.ids.vPlayer.seek(self.tStart/self.ids.vPlayer.duration)
