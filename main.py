@@ -90,7 +90,7 @@ class SrtMaker(Screen):
 
         elif keycode[1] == 'spacebar':
             self.recordTimestamps()
-            
+
         return True
     
     def recordTimestamps(self):
@@ -102,17 +102,8 @@ class SrtMaker(Screen):
             self.timeStamp = self.ids.vPlayer.position
         # write timestamp
         else:
-            caption = []
-            # index number
-            caption.append(str(self.i + 1) + "\n")
-            # start and end timestamp
-            startTime = self.formatTime(self.timeStamp)
-            stopTime = self.formatTime(self.ids.vPlayer.position)
-            caption.append("{} --> {}\n".format(startTime, stopTime))
-            # dialogue
-            caption.append(self.ids.dialogue.text + "\n")
-
-            print("\n".join(caption))
+            caption = self.writeCaptionSRT()
+            # print("\n".join(caption))
             self.srtLst.append(caption)
             self.i += 1
             self.ids.name.text = self.script[self.i][0]
@@ -121,6 +112,21 @@ class SrtMaker(Screen):
         # change color
         self.ids.name.background_color = self.dialogueColor[self.recording]
         self.ids.dialogue.background_color = self.dialogueColor[self.recording]
+
+        return None
+    
+    def writeCaptionSRT(self):
+        caption = []
+        # index number
+        caption.append(str(self.i + 1) + "\n")
+        # start and end timestamp
+        startTime = self.formatTime(self.timeStamp)
+        stopTime = self.formatTime(self.ids.vPlayer.position)
+        caption.append("{} --> {}\n".format(startTime, stopTime))
+        # dialogue
+        caption.append(self.ids.dialogue.text + "\n")
+
+        return caption
 
     def callbackSetVideoInitSeek(self, dt):
         self.ids.vPlayer.state = 'pause'
