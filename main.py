@@ -127,6 +127,14 @@ class SrtMaker(Screen):
         caption.append(self.ids.dialogue.text + "\n")
 
         return caption
+    
+    def writeCaptionKv(self):
+        caption = {}
+        caption['start'] = self.timeStamp
+        caption['duration'] = self.ids.vPlayer.position - self.timeStamp
+        caption['text'] = self.ids.dialogue.text
+
+        return caption
 
     def callbackSetVideoInitSeek(self, dt):
         self.ids.vPlayer.state = 'pause'
