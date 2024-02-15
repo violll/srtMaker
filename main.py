@@ -105,7 +105,8 @@ class SrtMaker(Screen):
             self.timeStamp = self.ids.vPlayer.position
         # write timestamp
         else:
-            caption = self.writeCaptionSRT()
+            self.writeCaptionSRT()
+            self.writeCaptionKv()
             # print("\n".join(caption))
             
             self.i += 1
@@ -279,7 +280,12 @@ class SrtMaker(Screen):
         f = open(App.get_running_app().captionKv, "w")
         captionKvList = [x for x in self.captionKv]
         json.dump(captionKvList, f, indent=4)
-        
+
+    def saveAllCaptionData(self):
+        self.saveSRT()
+        self.saveCaptionKv()  
+        self.manager.get_screen("video").ids.vPlayer.annotations = App.get_running_app().captionKv
+
 ''' SRT FORMAT
 index number
 hh:mm:ss,msx --> hh:mm:ss,msx
