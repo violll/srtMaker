@@ -10,6 +10,7 @@ from kivy.clock import Clock
 
 import os
 import re
+import json
 
 from bs4 import BeautifulSoup
 
@@ -58,7 +59,7 @@ class SrtMaker(Screen):
         self.script = StringProperty()
         self.srtStr = StringProperty()
         self.strLst = ListProperty()
-        self.captionKV = ListProperty()
+        self.captionKv = ListProperty()
         self.i = NumericProperty()
         self.tStart = NumericProperty()
         self.recording = BooleanProperty()
@@ -73,7 +74,7 @@ class SrtMaker(Screen):
 
         self.script = self.reformatScript()
         self.srtStr, self.srtLst, self.i, self.tStart = self.initSRT()
-        self.captionKV = self.initCaptionKv()
+        self.captionKv = self.initCaptionKv()
                 
         self.ids.name.text = self.script[self.i][0]
         self.ids.dialogue.text = self.script[self.i][1]
@@ -136,7 +137,7 @@ class SrtMaker(Screen):
         caption['start'] = self.timeStamp
         caption['duration'] = self.ids.vPlayer.position - self.timeStamp
         caption['text'] = self.ids.dialogue.text
-        self.captionKV.append(caption)
+        self.captionKv.append(caption)
 
         return caption
 
@@ -229,22 +230,33 @@ class SrtMaker(Screen):
         return srtStr, srtLst, iStart, tStart
     
     def initCaptionKv(self):
+        App.get_running_app().captionKv = App.get_running_app().video[:-4] + ".jsa"
         captionKv = []
+        # if an srt file is loaded
         if self.srtLst != []:
-            for line in self.srtLst:
+            # check if jsa file exists
+            if os.path.isfile(App.get_running_app().captionKv):
+                # load the jsa file
+                captionKv = json.load(open(App.get_running_app().captionKv))
+            else:
+                # make the jsa file
+                for line in self.srtLst:
+                    start, end = line[1].split(" --> ")
+                    start = self.convertSRTTimeDigits(start)
+                    end = self.convertSRTTimeDigits(end)
+                    text = line[2:]
 
-                start, end = line[1].split(" --> ")
-                start = self.convertSRTTimeDigits(start)
-                end = self.convertSRTTimeDigits(end)
-                text = line[2:]
+                    if type(text) == list:
+                        text = "".join(text)
+                    
+                    d = {'start': start, 'duration': end - start, 'text': text}
+                    
+                    captionKv.append(d)
 
-                if type(text) == list:
-                    text = "".join(text)
+                # save the file
+                self.captionKv = captionKv
+                self.saveCaptionKv()
                 
-                d = {'start': start, 'duration': end - start, 'text': text}
-                
-                captionKv.append(d)
-
         return captionKv
     
     def convertSRTTimeDigits(self, t):
@@ -259,10 +271,14 @@ class SrtMaker(Screen):
         if ".srt" in App.get_running_app().srt:
             f = open(App.get_running_app().srt, "w")
         else:
-            f = open(App.get_running_app().video + ".srt", "w")
+            f = open(App.get_running_app().video[:-4] + ".srt", "w")
         f.write(srt)
         f.close
 
+    def saveCaptionKv(self):
+        f = open(App.get_running_app().captionKv, "w")
+        captionKvList = [x for x in self.captionKv]
+        json.dump(captionKvList, f, indent=4)
         
 ''' SRT FORMAT
 index number
@@ -280,6 +296,7 @@ class SrtMakerApp(App):
     video = StringProperty('Select Video')
     script = StringProperty('Select Script')
     srt = StringProperty('Select SRT File (optional)')
+    captionKv = StringProperty()
 
     def build(self):
         sm = ScreenManager()
